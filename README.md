@@ -159,3 +159,28 @@ El proyecto incluye scripts en el directorio temporal o de scratchpad para prueb
 *   **Prueba de Scraper Directo:** `test_scraper.py` busca un término e intenta descargar el primer PDF.
 *   **Prueba de API REST e Integración SSE:** `test_api.py` verifica el estado, realiza una consulta y ejecuta la descarga del PDF a través del servidor FastAPI en ejecución.
 *   **Prueba de Cliente MCP Stdio:** `test_mcp_stdio_client.py` inicia el servidor MCP en un subproceso y realiza las llamadas JSON-RPC oficiales simulando un cliente real.
+
+---
+
+## Descargo de Responsabilidad y Términos de Uso
+
+> [!WARNING]
+> **LEER ATENTAMENTE ANTES DE UTILIZAR LA HERRAMIENTA**
+>
+> Este software es una utilidad de automatización de código abierto provista únicamente con fines **educativos, de investigación académica y para consultas individuales de carácter privado**. 
+
+### 1. Cumplimiento de las Normativas del CENDOJ y CGPJ
+El sitio web del portal del **CENDOJ** (Centro de Documentación Judicial del Consejo General del Poder Judicial de España) establece términos de acceso específicos. Al utilizar este software, el usuario asume toda la responsabilidad de cumplir con dichas políticas:
+*   **Uso Particular:** El acceso al buscador del CENDOJ está restringido únicamente a consultas individuales y particulares de carácter no mercantil.
+*   **Prohibición de Descarga Masiva y Fines Comerciales:** De acuerdo con las directrices del CGPJ, está terminantemente prohibido el uso de herramientas automáticas para la extracción masiva de jurisprudencia (*web scraping* masivo) y la explotación comercial de su base de datos. Si requieres reutilizar los datos con fines comerciales o masivos, debes solicitar una licencia de reutilización formal directamente ante el CENDOJ.
+*   **Frecuencia de Consultas:** Se recomienda encarecidamente utilizar esta herramienta con moderación y pausas razonables para no saturar los servidores públicos del CENDOJ ni infringir sus límites razonables de servicio.
+
+### 2. Protección de Datos Personales (RGPD / LOPDGDD)
+Las sentencias publicadas por el CENDOJ han sido previamente sometidas a un proceso de anonimización/seudonimización. El Reglamento General de Protección de Datos (RGPD) y la Ley Orgánica 3/2018 (LOPDGDD) prohíben estrictamente el uso de estas informaciones para la reidentificación de personas físicas implicadas en los procedimientos judiciales. El usuario final es el único responsable legal del tratamiento que dé a los textos extraídos por este software.
+
+### 3. Exención de Responsabilidad Legal
+Los desarrolladores y contribuidores de este proyecto:
+*   **No se hacen responsables** del uso indebido, fraudulento o ilegal que el usuario final pueda hacer de esta API o servidor MCP.
+*   **No asumen ninguna responsabilidad** ante posibles bloqueos de direcciones IP, acciones legales, apercibimientos judiciales o cualquier medida que el CGPJ pudiera adoptar contra el usuario final como consecuencia del uso de este software.
+*   Proporcionan la herramienta **"tal cual"** (*as is*), sin garantías de ningún tipo respecto a su continuidad, disponibilidad técnica o exactitud de los resultados devueltos si la web del CENDOJ modifica su estructura o diseño.
+
