@@ -1,4 +1,4 @@
-# Servidor MCP para CENDOJ (Buscador de Jurisprudencia)
+# MCP-CENDOJ: Servidor MCP y API para el Buscador de Jurisprudencia
 
 <img width="1024" height="1024" alt="MCP-CENDOJ" src="https://github.com/user-attachments/assets/4b6746ba-85af-4199-9a45-3bd0121a8b9c" />
 
@@ -135,8 +135,8 @@ Para conectar este servidor MCP con Claude Desktop, edita tu archivo de configur
 {
   "mcpServers": {
     "cendoj-jurisprudencia": {
-      "command": "c:/workspace-github/CENDOJ-BOE/.venv/Scripts/python.exe",
-      "args": ["c:/workspace-github/CENDOJ-BOE/run.py", "mcp"],
+      "command": "c:/workspace-github/MCP-CENDOJ/.venv/Scripts/python.exe",
+      "args": ["c:/workspace-github/MCP-CENDOJ/run.py", "mcp"],
       "env": {
         "CENDOJ_HEADLESS": "true"
       }
@@ -152,7 +152,7 @@ Para utilizar el servidor en Cursor:
 3.  Configura los siguientes valores:
     *   **Name:** `CENDOJ`
     *   **Type:** `command`
-    *   **Command:** `c:/workspace-github/CENDOJ-BOE/.venv/Scripts/python.exe c:/workspace-github/CENDOJ-BOE/run.py mcp`
+    *   **Command:** `c:/workspace-github/MCP-CENDOJ/.venv/Scripts/python.exe c:/workspace-github/MCP-CENDOJ/run.py mcp`
 
 ---
 
