@@ -1,0 +1,29 @@
+# Entorno Virtual
+.venv/
+env/
+ENV/
+venv/
+
+# Variables de Entorno y Configuración Local
+.env
+.env.local
+.env.*.local
+
+# Python - Cache y Compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Capturas de pantalla temporales y depuración
+screenshot_*.png
+*.log
+
+# IDEs y Editores de texto
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+.DS_Store

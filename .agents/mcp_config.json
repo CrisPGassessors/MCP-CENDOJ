@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "cendoj-jurisprudencia": {
+      "command": "c:/workspace-github/CENDOJ-BOE/.venv/Scripts/python.exe",
+      "args": [
+        "c:/workspace-github/CENDOJ-BOE/run.py",
+        "mcp"
+      ],
+      "env": {
+        "CENDOJ_HEADLESS": "true"
+      }
+    }
+  }
+}
