@@ -154,6 +154,37 @@ Para utilizar el servidor en Cursor:
     *   **Type:** `command`
     *   **Command:** `c:/workspace-github/MCP-CENDOJ/.venv/Scripts/python.exe c:/workspace-github/MCP-CENDOJ/run.py mcp`
 
+## Guía de Prompts en Lenguaje Natural (CENDOJ MCP)
+
+Esta guía muestra cómo puedes hablarle al asistente en lenguaje natural y conversacional (como si hablaras con un colega o un abogado), y cómo la IA se encarga de traducir tu petición en consultas técnicas para el buscador del CENDOJ.
+
+### 💬 Ejemplos Prácticos de Interacción Conversacional
+
+1. **Consultar dudas sobre accidentes en situaciones modernas**
+   * **Tu prompt en lenguaje natural:** *"Oye, búscame casos de teletrabajadores que se hayan tropezado en su propia cocina durante el horario de trabajo y si los tribunales lo han aceptado como accidente laboral."*
+   * **Cómo lo procesa la IA tras bambalinas:** Busca términos como `"accidente de trabajo"`, `"teletrabajo"`, `"cocina"` u `"domicilio"` en la jurisdicción social, descarga los textos de las sentencias y analiza los hechos probados.
+   * **Respuesta que recibes:** Un resumen de si los tribunales consideran la cocina como "lugar de trabajo" durante la jornada y qué requisitos exigen.
+
+2. **Investigar fallos en una zona geográfica específica**
+   * **Tu prompt en lenguaje natural:** *"Necesito ver sentencias recientes de aquí de Valladolid sobre despidos disciplinarios a empleados que se quedaron dormidos durante su turno de vigilancia."*
+   * **Cómo lo procesa la IA tras bambalinas:** Filtra por la sede de Valladolid (`localizacion: ["Valladolid"]`), busca los términos `"despido disciplinario"` y `"quedarse dormido"` o `"vigilante"` en la jurisdicción social, ordenando por fecha reciente.
+   * **Respuesta que recibes:** La lista de las últimas sentencias dictadas por el TSJ de Castilla y León en Valladolid sobre ese tema y si los despidos se declararon procedentes o improcedentes.
+
+3. **Analizar la doctrina del Tribunal Supremo sobre temas familiares**
+   * **Tu prompt en lenguaje natural:** *"Dime qué dice el Tribunal Supremo sobre si los padres separados están obligados a seguir pagando la carrera universitaria a hijos mayores de 25 años que no muestran mucho interés en estudiar."*
+   * **Cómo lo procesa la IA tras bambalinas:** Filtra por jurisdicción civil y localización Madrid (donde está el TS), buscando `"pensión de alimentos"`, `"hijos mayores de edad"`, `"estudios"`, `"aprovechamiento"`.
+   * **Respuesta que recibes:** Una explicación del criterio de "falta de aprovechamiento académico" y la edad límite según la jurisprudencia del Tribunal Supremo.
+
+4. **Reclamaciones contra administraciones locales**
+   * **Tu prompt en lenguaje natural:** *"Quiero reclamar al ayuntamiento porque metí el pie en un socavón de la calzada mientras corría. ¿Hay sentencias en Castilla y León donde hayan condenado al ayuntamiento por esto o suelen echarle la culpa al peatón?"*
+   * **Cómo lo procesa la IA tras bambalinas:** Busca en el orden Contencioso-Administrativo de la región por `"responsabilidad patrimonial"`, `"caída peatón"`, `"socavón"` o `"bache"`, analizando la concurrencia de culpas.
+   * **Respuesta que recibes:** Un análisis de la probabilidad de éxito basándote en si los jueces locales consideran que el peatón debió ser más diligente o si la falta de mantenimiento del ayuntamiento es la causa exclusiva.
+
+5. **Resumir y explicar sentencias de gran repercusión**
+   * **Tu prompt en lenguaje natural:** *"Tengo entendido que hay una sentencia famosa del Supremo sobre los intereses abusivos de las tarjetas revolving de Wizink. Búscala, léela entera y explícame en dos párrafos sencillos qué decidió el tribunal sobre el porcentaje de interés."*
+   * **Cómo lo procesa la IA tras bambalinas:** Localiza la sentencia clave (ej. usando palabras clave como `"Wizink"`, `"revolving"`, `"usura"`), descarga su PDF completo usando `obtener_texto_resolucion`, lee los fundamentos de derecho y redacta el resumen ejecutivo.
+   * **Respuesta que recibes:** Una explicación sencilla libre de tecnicismos complejos sobre el umbral a partir del cual el interés se considera usurario y nulo.
+
 ---
 
 ## Pruebas y Verificación
