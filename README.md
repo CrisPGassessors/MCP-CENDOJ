@@ -1,4 +1,7 @@
-# API y Servidor MCP para CENDOJ (Buscador de Jurisprudencia)
+# Servidor MCP para CENDOJ (Buscador de Jurisprudencia)
+
+<img width="1024" height="1024" alt="MCP-CENDOJ" src="https://github.com/user-attachments/assets/4b6746ba-85af-4199-9a45-3bd0121a8b9c" />
+
 
 Este proyecto proporciona una **API REST (FastAPI)** y un **Servidor MCP (Model Context Protocol)** para buscar y consultar sentencias y resoluciones judiciales del **CENDOJ** (Centro de Documentación Judicial de España).
 
