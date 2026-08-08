@@ -1,6 +1,8 @@
 import logging
+import os
+import hashlib
 from typing import List, Optional
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 from app.scraper import CendojScraper
 
@@ -85,3 +87,125 @@ async def obtener_texto_resolucion(pdf_url: str) -> str:
     except Exception as e:
         logger.error(f"Error in obtener_texto_resolucion: {e}", exc_info=True)
         return f"Error al descargar y extraer texto del PDF: {str(e)}"
+
+@mcp.tool(
+    name="descargar_pdf_resolucion",
+    description="Descarga el archivo PDF original de una resolución judicial del CENDOJ y lo guarda en el espacio de trabajo local."
+)
+async def descargar_pdf_resolucion(pdf_url: str, filename: Optional[str] = None) -> str:
+    """
+    Descarga y guarda localmente una sentencia judicial en formato PDF a partir de su enlace de descarga.
+
+    Args:
+        pdf_url: El enlace de descarga directa del archivo PDF del CENDOJ.
+        filename: Nombre de archivo opcional para guardarlo (por defecto se autogenerará un nombre único).
+    """
+    logger.info(f"MCP Tool descargar_pdf_resolucion called with url='{pdf_url}' and filename='{filename}'")
+    try:
+        async with CendojScraper() as scraper:
+            pdf_bytes = await scraper.download_pdf_bytes(pdf_url)
+            
+            # Create downloads directory in workspace
+            project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            downloads_dir = os.path.join(project_dir, "downloads")
+            os.makedirs(downloads_dir, exist_ok=True)
+            
+            if not filename:
+                url_hash = hashlib.md5(pdf_url.encode('utf-8')).hexdigest()[:8]
+                filename = f"resolucion_{url_hash}.pdf"
+            
+            if not filename.endswith(".pdf"):
+                filename += ".pdf"
+                
+            # Sanitize filename
+            filename = "".join(c for c in filename if c.isalnum() or c in (".", "_", "-"))
+            
+            dest_path = os.path.join(downloads_dir, filename)
+            with open(dest_path, "wb") as f:
+                f.write(pdf_bytes)
+                
+            return f"PDF descargado y guardado correctamente en: {dest_path}"
+    except Exception as e:
+        logger.error(f"Error in descargar_pdf_resolucion: {e}", exc_info=True)
+        return f"Error al descargar la resolución PDF: {str(e)}"
+
+@mcp.tool(
+    name="exportar_resolucion_markdown",
+    description="Descarga el contenido de una resolución judicial, extrae su texto y lo exporta a un archivo Markdown estructurado con toda su metadatos."
+)
+async def exportar_resolucion_markdown(
+    pdf_url: str,
+    titulo: Optional[str] = None,
+    fecha: Optional[str] = None,
+    organo: Optional[str] = None,
+    sede: Optional[str] = None,
+    ponente: Optional[str] = None,
+    roj: Optional[str] = None,
+    ecli: Optional[str] = None,
+    n_recurso: Optional[str] = None,
+    n_resolucion: Optional[str] = None,
+    filename: Optional[str] = None
+) -> str:
+    """
+    Descarga una sentencia, extrae su texto plano y genera un reporte Markdown completo en el espacio de trabajo local.
+
+    Args:
+        pdf_url: Enlace directo al PDF en CENDOJ.
+        titulo: Título o resumen del fallo (opcional).
+        fecha: Fecha del fallo (opcional).
+        organo: Órgano judicial (opcional).
+        sede: Sede judicial (opcional).
+        ponente: Magistrado ponente (opcional).
+        roj: Identificador ROJ (opcional).
+        ecli: Código ECLI (opcional).
+        n_recurso: Número de recurso (opcional).
+        n_resolucion: Número de resolución (opcional).
+        filename: Nombre de archivo de destino (opcional).
+    """
+    logger.info(f"MCP Tool exportar_resolucion_markdown called for PDF: {pdf_url}")
+    try:
+        # Fetch text (will be fast if cached)
+        async with CendojScraper() as scraper:
+            text = await scraper.download_pdf_text(pdf_url)
+            
+        # Format the markdown content
+        md_content = f"# Resolución Judicial: {titulo or 'Sentencia CENDOJ'}\n\n"
+        md_content += "## Metadatos\n"
+        md_content += f"* **Fecha**: {fecha or 'No disponible'}\n"
+        md_content += f"* **Órgano**: {organo or 'No disponible'}\n"
+        md_content += f"* **Sede**: {sede or 'No disponible'}\n"
+        md_content += f"* **Magistrado Ponente**: {ponente or 'No disponible'}\n"
+        md_content += f"* **Número de Resolución**: {n_resolucion or 'No disponible'}\n"
+        md_content += f"* **Número de Recurso**: {n_recurso or 'No disponible'}\n"
+        md_content += f"* **ROJ**: {roj or 'No disponible'}\n"
+        md_content += f"* **ECLI**: {ecli or 'No disponible'}\n"
+        md_content += f"* **Enlace PDF original**: [{pdf_url}]({pdf_url})\n\n"
+        md_content += "---\n\n"
+        md_content += "## Texto Completo de la Resolución\n\n"
+        md_content += text
+        
+        # Create exports directory
+        project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        exports_dir = os.path.join(project_dir, "exports")
+        os.makedirs(exports_dir, exist_ok=True)
+        
+        if not filename:
+            url_hash = hashlib.md5(pdf_url.encode('utf-8')).hexdigest()[:8]
+            clean_roj = "".join(c for c in (roj or "") if c.isalnum() or c in (" ", "_", "-")).replace(" ", "_")
+            filename = f"sentencia_{clean_roj or url_hash}.md"
+            
+        if not filename.endswith(".md"):
+            filename += ".md"
+            
+        # Sanitize filename
+        filename = "".join(c for c in filename if c.isalnum() or c in (".", "_", "-"))
+        
+        dest_path = os.path.join(exports_dir, filename)
+        with open(dest_path, "w", encoding="utf-8") as f:
+            f.write(md_content)
+            
+        return f"Resolución exportada exitosamente a Markdown en: {dest_path}"
+    except Exception as e:
+        logger.error(f"Error in exportar_resolucion_markdown: {e}", exc_info=True)
+        return f"Error al exportar resolución a Markdown: {str(e)}"
+

@@ -3,11 +3,17 @@ import json
 import sys
 
 def get_config_paths():
-    appdata = os.environ.get("APPDATA", "")
-    userprofile = os.environ.get("USERPROFILE", "")
+    home = os.path.expanduser("~")
     
-    claude_path = os.path.join(appdata, "Claude", "claude_desktop_config.json")
-    antigravity_path = os.path.join(userprofile, ".gemini", "antigravity-ide", "mcp_config.json")
+    if sys.platform == "win32":
+        appdata = os.environ.get("APPDATA", os.path.join(home, "AppData", "Roaming"))
+        claude_path = os.path.join(appdata, "Claude", "claude_desktop_config.json")
+    elif sys.platform == "darwin":
+        claude_path = os.path.join(home, "Library", "Application Support", "Claude", "claude_desktop_config.json")
+    else:  # Linux/Other
+        claude_path = os.path.join(home, ".config", "Claude", "claude_desktop_config.json")
+        
+    antigravity_path = os.path.join(home, ".gemini", "antigravity-ide", "mcp_config.json")
     
     return claude_path, antigravity_path
 
@@ -60,15 +66,20 @@ def register_in_config(config_path, server_name, python_exe, run_py):
 def main():
     # Detect current repository paths
     project_dir = os.path.abspath(os.path.dirname(__file__))
-    python_exe = os.path.join(project_dir, ".venv", "Scripts", "python.exe")
+    if sys.platform == "win32":
+        python_exe = os.path.join(project_dir, ".venv", "Scripts", "python.exe")
+    else:
+        python_exe = os.path.join(project_dir, ".venv", "bin", "python")
     run_py = os.path.join(project_dir, "run.py")
     
     print("==============================================")
     
     if not os.path.exists(python_exe):
         print(f"[ERROR] No se encontró el entorno virtual en: {python_exe}")
-        print("Por favor, ejecuta primero 'setup.bat' para configurar el entorno.")
+        setup_script = "setup.bat" if sys.platform == "win32" else "setup.sh"
+        print(f"Por favor, ejecuta primero '{setup_script}' para configurar el entorno.")
         sys.exit(1)
+
         
     print(f"Ruta del proyecto detectada: {project_dir}")
     print(f"Ejecutable Python detectado: {python_exe}")

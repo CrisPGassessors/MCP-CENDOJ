@@ -26,6 +26,62 @@ class CendojScraper:
         self.context = None
         self.page = None
         self.base_url = "https://www.poderjudicial.es/search/indexAN.jsp"
+        self._init_cache()
+
+    def _init_cache(self):
+        try:
+            cache_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".cache")
+            os.makedirs(cache_dir, exist_ok=True)
+            self.cache_db = os.path.join(cache_dir, "cendoj_cache.db")
+            import sqlite3
+            conn = sqlite3.connect(self.cache_db)
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS pdf_text_cache (
+                    pdf_url TEXT PRIMARY KEY,
+                    text TEXT,
+                    cached_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            logger.warning(f"Failed to initialize SQLite cache: {e}")
+            self.cache_db = None
+
+    def _get_cached_text(self, pdf_url: str) -> Optional[str]:
+        if not hasattr(self, 'cache_db') or not self.cache_db:
+            return None
+        try:
+            import sqlite3
+            conn = sqlite3.connect(self.cache_db)
+            cursor = conn.cursor()
+            cursor.execute("SELECT text FROM pdf_text_cache WHERE pdf_url = ?", (pdf_url,))
+            row = cursor.fetchone()
+            conn.close()
+            if row:
+                logger.info(f"Cache hit for PDF URL: {pdf_url}")
+                return row[0]
+        except Exception as e:
+            logger.warning(f"Error reading from cache: {e}")
+        return None
+
+    def _set_cached_text(self, pdf_url: str, text: str):
+        if not hasattr(self, 'cache_db') or not self.cache_db:
+            return
+        try:
+            import sqlite3
+            conn = sqlite3.connect(self.cache_db)
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT OR REPLACE INTO pdf_text_cache (pdf_url, text)
+                VALUES (?, ?)
+            """, (pdf_url, text))
+            conn.commit()
+            conn.close()
+            logger.info(f"Saved text to cache for PDF URL: {pdf_url}")
+        except Exception as e:
+            logger.warning(f"Error writing to cache: {e}")
 
     async def __aenter__(self):
         await self.start()
@@ -58,11 +114,11 @@ class CendojScraper:
 
     async def _dismiss_modal(self):
         try:
-            # Check for the Aviso Legal close button
-            close_button = self.page.locator('button.close, button[data-dismiss="modal"]')
-            if await close_button.count() > 0:
+            # Check for the Aviso Legal close button and verify it is visible
+            close_button = self.page.locator('button.close, button[data-dismiss="modal"]').first
+            if await close_button.is_visible():
                 logger.info("Dismissing Aviso Legal modal...")
-                await close_button.first.click()
+                await close_button.click(timeout=2000)
                 await self.page.wait_for_timeout(1000)
         except Exception as e:
             logger.warning(f"Error dismissing modal (might not be present): {e}")
@@ -344,8 +400,8 @@ class CendojScraper:
 
         return SearchResponse(total=total, results=results)
 
-    async def download_pdf_text(self, pdf_url: str) -> str:
-        logger.info(f"Downloading PDF resolution from: {pdf_url}")
+    async def download_pdf_bytes(self, pdf_url: str) -> bytes:
+        logger.info(f"Resolving real PDF URL from container: {pdf_url}")
         
         # Navigate to the PDF container URL first to resolve the real PDF location
         real_pdf_url = None
@@ -382,10 +438,14 @@ class CendojScraper:
         try:
             logger.info(f"Downloading PDF bytes via Playwright navigation from: {real_pdf_url}...")
             temp_page = await self.context.new_page()
-            response = await temp_page.goto(real_pdf_url, timeout=20000)
-            if response and response.status == 200:
-                pdf_bytes = await response.body()
+            async with temp_page.expect_download(timeout=25000) as download_info:
+                await temp_page.goto(real_pdf_url)
+            download = await download_info.value
+            download_path = await download.path()
+            with open(download_path, "rb") as f:
+                pdf_bytes = f.read()
             await temp_page.close()
+            logger.info("Downloaded PDF bytes via Playwright expect_download successfully.")
         except Exception as e:
             logger.warning(f"Playwright download failed: {e}. Trying httpx fallback...")
 
@@ -410,6 +470,18 @@ class CendojScraper:
 
         if not pdf_bytes or len(pdf_bytes) < 100:
             raise Exception("El PDF descargado está vacío o no es válido.")
+            
+        return pdf_bytes
+
+    async def download_pdf_text(self, pdf_url: str) -> str:
+        logger.info(f"Downloading PDF resolution from: {pdf_url}")
+        
+        # Check cache first
+        cached_text = self._get_cached_text(pdf_url)
+        if cached_text:
+            return cached_text
+            
+        pdf_bytes = await self.download_pdf_bytes(pdf_url)
 
         # Extract text using PyPDF
         logger.info("Extracting text from PDF...")
@@ -424,7 +496,9 @@ class CendojScraper:
             
             full_text = "\n".join(text_parts)
             logger.info(f"Extracted {len(full_text)} characters.")
+            self._set_cached_text(pdf_url, full_text)
             return full_text
         except Exception as e:
             logger.error(f"Error parsing PDF file: {e}")
             raise Exception(f"Error de lectura en el formato PDF: {e}")
+
