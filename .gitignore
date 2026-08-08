@@ -27,3 +27,9 @@ screenshot_*.png
 *.sln
 *.swp
 .DS_Store
+
+# CENDOJ Caches and Outputs
+.cache/
+downloads/
+exports/
+
