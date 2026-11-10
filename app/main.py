@@ -1,5 +1,6 @@
 import logging
 import os
+import secrets
 import sys
 import io
 import asyncio
@@ -34,7 +35,30 @@ app = FastAPI(
     description="API REST y Servidor MCP para consultar resoluciones judiciales del CENDOJ",
     version="1.0.0"
 )
+MCP_API_KEY = os.getenv("MCP_API_KEY", "")
 
+@app.middleware("http")
+async def require_api_key(request, call_next):
+    if request.url.path == "/api/status" or request.method == "OPTIONS":
+        return await call_next(request)
+
+    if not MCP_API_KEY:
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "Server authentication is not configured"}
+        )
+
+    supplied_key = request.headers.get("Authorization", "")
+    expected_key = f"Bearer {MCP_API_KEY}"
+
+    if not secrets.compare_digest(supplied_key, expected_key):
+        return JSONResponse(
+            status_code=401,
+            headers={"WWW-Authenticate": "Bearer"},
+            content={"detail": "Unauthorized"}
+        )
+
+    return await call_next(request)
 # Enable CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
